@@ -53,9 +53,14 @@ public class DocumentService {
     }
 
     public Document getDocument(String id){
+        // Ou sinon comme dans mon exemple orElseThrow(NotFoundException.DEFAULT) ca évite à tous les autres méthodes
+        // de tester la nullité, voir dans votre implémentation de lever une NPE ...
         return documentRepository.findById(id).orElse(null);
     }
 
+    /**
+     * il manque la gestion des droits sur le changement de statut, seul le reviewver peut le faie
+     */
     public Document updateDocument(String id, Document updatedocument, String editor) {
         Document document = getDocument(id);
 
@@ -65,8 +70,11 @@ public class DocumentService {
 
         }
 
-        if(!document.getStatus().equals(Document.StatusEnum.valueOf("VALIDATED"))) {
+        if(!document.getStatus().equals(Document.StatusEnum.VALIDATED)) {
+            // pkoi relire le document ici ????
             Document documentOnBase = documentRepository.findById(id).orElse(null);
+
+            // Attention ici si on passe un creator différent et une date de création différente celle du système est écrasée
             if(!updatedocument.getBody().equals(null)) documentOnBase.setBody(updatedocument.getBody());
             if(!updatedocument.getTitle().equals(null)) documentOnBase.setTitle(updatedocument.getTitle());
             documentOnBase.setEditor(editor);
